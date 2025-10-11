@@ -1,0 +1,16 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/members/details.mjs') }}"></script>
+  <meta name="resource-id" content="{{ member.res_id }}" />
+{% endblock %}
+{% block content %}
+  <p>Placeholder page for member profiles.</p>
+  <hr/>
+  <section>
+    <p>{{ member.member_moniker }}</p>
+    {% if can_edit %}
+      {{ "member_permissions" | make_select(all_roles, "Edit Member Role", member) }}
+      {{ "member_role" | make_submit("Submit") }}
+    {% endif %}
+  </section>
+{% endblock %}

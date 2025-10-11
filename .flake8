@@ -1,0 +1,4 @@
+[flake8]
+extend-ignore = E203,E701,E712,E731
+max-line-length = 100
+per-file-ignores = test/*:E501 src/pykc/pl/dtos.py:F403,F405

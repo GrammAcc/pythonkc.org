@@ -1,0 +1,7 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/members/join.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  <button id="join-discord-btn" class="action-btn">Join the Discord</button>
+{% endblock %}

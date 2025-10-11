@@ -1,0 +1,9 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/members/discord_login.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  {% if from_logout %}
+    <p>Successfully logged out</p>
+  {% endif %}
+{% endblock %}

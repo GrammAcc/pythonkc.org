@@ -1,0 +1,228 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pykc"
+dynamic = ["version"]
+description = "Python Kansas City User Group's Official Website"
+authors = [{ name = "GrammAcc" }]
+maintainers = [{ name = "GrammAcc" }]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiosqlite",
+    "hypercorn",
+    "pyjwt",
+    "quart",
+    "sqlalchemy[asyncio]",
+    "grammlog>=1.3.0",
+    "grammdb",
+    "aiohttp",
+]
+
+
+[project.optional-dependencies]
+dev = ["hatch"]
+
+[tool.hatch.version]
+path = "src/pykc/__init__.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build]
+ignore-vcs = true
+include = ["*.json", "py.typed"]
+
+
+# This is needed for hatchling to find the version in the package __init__.py file.
+# See https://github.com/pypa/hatch/issues/981#issuecomment-1743631364
+[tool.hatch.build.targets.sdist]
+include = ["src"]
+
+# This is needed for hatchling to find the version in the package __init__.py file.
+# See https://github.com/pypa/hatch/issues/981#issuecomment-1743631364
+[tool.hatch.build.targets.wheel]
+packages = ["src/pykc"]
+
+[tool.hatch.envs.default]
+python = "3.13"
+dependencies = [
+    "pytest",
+    "pytest-cov",
+    # See: https://github.com/pytest-dev/pytest-asyncio/issues/706
+    "pytest-asyncio>=0.24.0",
+    "websockets",
+    "black",
+    "flake8",
+    "isort",
+    "mypy",
+    "pdoc",
+]
+
+
+[tool.hatch.envs.default.scripts]
+
+typecheck = "mypy -p pykc {args}"
+format = ["isort --atomic .", "black ."]
+lint = "flake8 src test docs"
+"docs.build" = "APPENV=dev pdoc 'pykc' --docformat='google' --output-directory='docs/site'"
+"docs.serve" = "python documentation/serve.py"
+"docs.test" = "APPENV=test python documentation/run_doctests.py"
+"build.frontend" = [
+    "hatch run frontend:build.pykc",
+    "hatch run frontend:build.events",
+]
+"format.frontend" = [
+    "hatch run frontend:format.pykc",
+    "hatch run frontend:format.events",
+]
+
+"test.members" = [
+    # "APPENV=test hatch run test:serve",
+    # "sleep 1",
+    "APPENV=test pytest -m members",
+    # "hatch run test:stop",
+]
+
+"test.events" = [
+    # "APPENV=test hatch run test:serve",
+    # "sleep 1",
+    "APPENV=test pytest -m events",
+    # "hatch run test:stop",
+]
+
+"test.integration" = [
+    # "APPENV=test hatch run test:serve",
+    # "sleep 1",
+    "APPENV=test pytest test/integration {args}",
+    # "hatch run test:stop",
+]
+
+"test.unit" = [
+    "APPENV=test pytest test/unit",
+]
+
+"test.all" = [
+    "hatch run test:setup",
+    "hatch run test:seed",
+    "hatch run test.unit",
+    "hatch run test.integration",
+    "hatch run docs.test",
+]
+"test.cov" = [
+    # "APPENV=test hatch run test:serve",
+    # "sleep 1",
+    "- APPENV=test pytest --cov-config=pyproject.toml --cov-report html:htmlcov --cov=pykc",
+    # "hatch run test:stop",
+]
+ci = [
+    "hatch run test.all",
+    "hatch run typecheck",
+    "hatch run lint",
+]
+all = [
+    "hatch run format",
+    "hatch run frontend:format",
+    "hatch run frontend:build",
+    "- hatch run test.all",
+    "- hatch run typecheck",
+    "- hatch run lint",
+]
+
+
+[tool.hatch.envs.prod]
+description = "Prod Configuration"
+
+[tool.hatch.envs.prod.scripts]
+setup = "python -m scripts.genprodenv"
+serve = "APPENV=prod hypercorn --config env/prod.server.toml 'pykc:create_app()'"
+stop = "pkill hypercorn"
+"seed.members" = "APPENV=prod python -m scripts.seed_members"
+"seed.events" = "APPENV=prod python -m scripts.seed_events"
+seed = [
+    "APPENV=prod python -m scripts.seed_members",
+    "APPENV=prod python -m scripts.seed_events",
+]
+
+
+[tool.hatch.envs.dev]
+description = "Local Dev"
+
+[tool.hatch.envs.dev.scripts]
+setup = "python -m scripts.gendevenv"
+"setup.proxy" = "python -m scripts.gendevenvwithproxy"
+serve = "APPENV=dev hypercorn --config env/dev.server.toml 'pykc:create_app()'"
+stop = "pkill hypercorn"
+"seed.members" = "APPENV=dev python -m scripts.seed_members"
+"seed.events" = "APPENV=dev python -m scripts.seed_events"
+seed = [
+    "APPENV=dev python -m scripts.seed_members",
+    "APPENV=dev python -m scripts.seed_events",
+]
+mkorganizer = "APPENV=dev python -m scripts.make_organizer {args}"
+
+
+[tool.hatch.envs.test]
+description = "Test environment"
+
+[tool.hatch.envs.test.scripts]
+setup = "python -m scripts.gentestenv"
+serve = "APPENV=test hypercorn --config env/test.server.toml 'pykc:create_app()' 1>/dev/null 2>&1 &"
+stop = "pkill hypercorn"
+"seed.members" = "APPENV=test python -m scripts.seed_members"
+"seed.events" = "APPENV=test python -m scripts.seed_events"
+seed = [
+    "APPENV=test python -m scripts.seed_members",
+    "APPENV=test python -m scripts.seed_events",
+]
+
+[tool.hatch.envs.frontend]
+description = "Utilities for building/deploying the frontend. Requires Node.js"
+detached = true
+
+[tool.hatch.envs.frontend.scripts]
+"build" = "npx tailwindcss -c ./tailwind.config.js -i ./app.css -o ./src/pykc/pl/static/main.css"
+"format" = "npx prettier --write './src/**/*.mjs'"
+
+
+[tool.pytest.ini_options]
+log_file = "env/logs/testsuite.log"
+log_file_level = "DEBUG"
+addopts = "--import-mode=importlib --show-capture=no"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+markers = [
+    "members: run tests related to member accounts",
+    "events: run tests related to event management",
+]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+omit = ["__init__.py", "custom_columns.py"]
+fail_under = 90
+
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+force_grid_wrap = 2
+
+[tool.mypy]
+check_untyped_defs = true
+
+[tool.black]
+line-length = 100

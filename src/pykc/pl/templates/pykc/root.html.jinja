@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block seo %}
+      <title>{{ page_title }}</title>
+      <meta name="description" content={{ page_title }} />
+    {% endblock %}
+
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{{ make_url('/pykc/static/main.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+    <meta name="base-url" content="{{ make_url('') }}" />
+    <script type="module" src="{{ make_url('/pykc/static/common/search.mjs') }}"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <header id="top">
+      {% block nav %}{% endblock %}
+    </header>
+    <main>
+      {% block search %}
+        <button id="toggle-quicksearch-btn" class="common-btn self-center shrink">Search...</button>
+          <dialog id="quicksearch-modal" class="modal">
+            <input id="search-box" class="self-center w-96 text-center bg-neutral-600 placeholder:text-neutral-300 accent-black" type="text" placeholder="Quick Search...">
+            <div id="search-results">
+              <p>Members:</p>
+              <div id="member_search_result-list"></div>
+              <p>Events:</p>
+              <div id="event_search_result-list"></div>
+            </div>
+          </dialog>
+      {% endblock %}
+      {% block main %}{% endblock %}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/members/account.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  <section>
+    <div>
+      {{ "member_moniker" | make_input("text", "Moniker", member) }}
+      {{ "member_first_name" | make_input("text", "First Name", member) }}
+      {{ "member_last_name" | make_input("text", "Last Name", member) }}
+      {{ "member_pronouns" | make_input("text", "Pronouns (Optional)", member) }}
+    </div>
+    {{ "account" | make_submit("Save Changes") }}
+  </section>
+{% endblock %}

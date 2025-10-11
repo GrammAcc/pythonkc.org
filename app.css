@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply color-primary break-normal p-2 min-h-svh;
+  }
+  main {
+    @apply flex flex-col mb-5;
+  }
+  article {
+    @apply flex-col;
+  }
+  section {
+    @apply flex flex-col;
+  }
+  header {
+    @apply color-accent;
+  }
+  hr {
+    @apply rounded-2xl h-0.5 w-11/12 my-1 color-accent border-0 self-center;
+  }
+  ul {
+    @apply list-disc list-inside ps-8;
+  }
+  ol {
+    @apply list-decimal list-inside ps-8;
+  }
+  pre {
+    @apply py-2;
+  }
+  code {
+    @apply font-mono text-xs;
+  }
+  pre code {
+    @apply block bg-black px-2 overflow-x-auto;
+  }
+  h1 {
+    @apply text-xl font-bold;
+  }
+  h2 {
+    @apply text-lg font-bold;
+  }
+  h3 {
+    @apply text-lg;
+  }
+  blockquote {
+    @apply p-4 my-4 border-s-4 border-gray-300 bg-gray-50 dark:border-gray-500 dark:bg-gray-800;
+  }
+}
+
+@layer components {
+  .color-primary {
+    @apply bg-neutral-900 text-neutral-300 border-neutral-300;
+  }
+  .color-accent {
+    @apply bg-blue-800 text-black border-neutral-300;
+  }
+  .color-highlight {
+    @apply bg-blue-500 text-black border-neutral-300;
+  }
+  .color-contrast {
+    @apply bg-yellow-600 text-black;
+  }
+  .color-link {
+    @apply text-green-400 hover:text-green-600;
+  }
+  .color-input {
+    @apply bg-neutral-700;
+  }
+  *:disabled {
+    @apply bg-gray-600 border-black;
+  }
+  .alternating-item {
+    @apply even:color-accent odd:color-primary hover:color-contrast;
+  }
+  .common-table {
+    @apply border border-collapse w-full;
+  }
+  .common-table th {
+    @apply clickable text-center px-1 py-0.5;
+  }
+  .common-table tr {
+    @apply alternating-item;
+  }
+  .common-table td {
+    @apply border border-inherit px-1 py-0.5 text-center;
+  }
+  .common-input {
+    @apply text-center w-96 m-1 rounded shadow-sm shadow-black placeholder:text-neutral-300 accent-black;
+  }
+  .common-input:enabled {
+    @apply color-input;
+  }
+  .numeric-text-input {
+    @apply common-input w-[3em];
+  }
+  .clickable {
+    @apply color-input hover:rounded-sm hover:color-highlight motion-safe:transition-all motion-safe:duration-100;
+  }
+  textarea.common-input {
+    @apply w-11/12;
+  }
+  .common-btn {
+    @apply px-1.5 my-1 mx-1 rounded-lg;
+  }
+  .common-btn:enabled {
+    @apply clickable;
+  }
+  .action-btn {
+    @apply common-btn w-fit;
+  }
+  summary.common-btn {
+    @apply clickable;
+  }
+  .nav-btn {
+    @apply rounded py-0.5 px-1.5 text-xl hover:drop-shadow-lg bg-clip-border motion-safe:transition-all motion-safe:duration-200;
+  }
+  header .nav-btn {
+    @apply hover:color-contrast;
+  }
+  .inline-icon {
+    @apply inline w-4 h-4;
+  }
+  .inline-link {
+    @apply color-link;
+  }
+  .note {
+    @apply px-12 my-4 border-s-4 border-neutral-500;
+  }
+  .info {
+    @apply color-contrast px-4;
+  }
+  .modal {
+    @apply p-4 bg-gray-800 text-gray-300 shadow-lg shadow-black fixed top-[15%] bottom-[15%] left-[15%] right-[15%] overflow-y-scroll;
+  }
+  .list-container {
+    @apply flex flex-col;
+  }
+  .contained-list {
+    @apply flex flex-col absolute top-0 right-0 left-0 bottom-0 overflow-y-scroll;
+  }
+  .info-section {
+    @apply self-center w-1/2;
+  }
+  .list-section {
+    @apply items-stretch;
+  }
+  .bookends {
+    @apply flex flex-row justify-between;
+  }
+  .spread-row {
+    @apply flex flex-row justify-evenly;
+  }
+  .spread-col {
+    @apply flex flex-col justify-evenly;
+  }
+  .validation-msg {
+    @apply min-h-6;
+  }
+}

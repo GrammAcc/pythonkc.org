@@ -1,0 +1,71 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/events/event_management.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  <div class="flex flex-row flex-shrink">
+    <button id="event-tab-btn" class="common-btn">Events</button>
+    <button id="venue-tab-btn" class="common-btn">Venues</button>
+  </div>
+
+  <hr/>
+
+  <section id="event-tab" class="hidden">
+    <dialog id="event-modal" class="modal">
+      {{ "event_title" | make_input("text", "Title") }}
+      {{ "event_description" | make_textarea("Description") }}
+      {{ "event_external_link" | make_input("text", "External Link") }}
+      {{ "event_date" | make_input("date", "Date") }}
+      {{ "event_start_time" | make_input("time", "Start Time") }}
+      {{ "event_end_time" | make_input("time", "End Time") }}
+      {{ "event_venue_id" | make_select(available_venues, "Venue") }}
+      {{ "event_location_details" | make_input("text", "Additional Location Detail") }}
+      {{ "event_is_av_capable" | make_input("checkbox", "Has A/V") }}
+    </dialog>
+
+    <dialog id="recurring-modal" class="modal">
+      {{ "recurring_title" | make_input("text", "Title") }}
+      {{ "recurring_description" | make_textarea("Description") }}
+      {{ "recurring_interval_type" | make_select(event_intervals, "Interval") }}
+      {{ "recurring_month" | make_select(months, "Month") }}
+      {{ "recurring_week" | make_select(weeks, "Week") }}
+      {{ "recurring_day" | make_select(weekdays, "Day") }}
+      {{ "recurring_start_time" | make_input("time", "Start Time") }}
+      {{ "recurring_end_time" | make_input("time", "End Time") }}
+      {{ "recurring_interval_summary" | make_info("Interval") }}
+      {{ "recurring_next_scheduled_date" | make_info("Next Occurrence") }}
+    </dialog>
+
+
+
+    <article class="bookends w-11/12">
+      <div class="list-container w-1/2">
+        <section id="upcoming_event-list" class="list-section">
+        </section>
+      </div>
+      <div class="list-container w-1/2">
+        <section id="recurring-list" class="list-section">
+        </section>
+      </div>
+    </article>
+  </section>
+
+  <section id="venue-tab" class="hidden">
+    <dialog id="venue-modal" class="modal">
+      {{ "venue_name" | make_input("text", "Venue Name") }}
+      {{ "venue_city" | make_input("text", "City") }}
+      {{ "venue_state" | make_input("text", "State") }}
+      {{ "venue_postal_code" | make_input("text", "Postal Code") }}
+      {{ "venue_address_line1" | make_input("text", "Address Line 1") }}
+      {{ "venue_address_line2" | make_input("text", "Address Line 2") }}
+      {{ "venue_address_line3" | make_input("text", "Address Line 3") }}
+      {{ "venue_external_link" | make_input("text", "Official Website") }}
+    </dialog>
+
+    <div class="list-container">
+      <section id="venue-list" class="list-section">
+      </section>
+    </div>
+  </section>
+
+{% endblock %}

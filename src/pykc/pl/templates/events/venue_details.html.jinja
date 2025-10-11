@@ -1,0 +1,20 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <meta name="resource-id" content="{{ venue.venue_id }}" />
+{% endblock %}
+{% block content %}
+  <section>
+    <p>{{ venue.venue_name }}</p>
+    <br/>
+    <a class="inline-link" href="{{ venue.venue_external_link }}">Official Website</a>
+    <br/>
+    <p>{{ venue.venue_city }}, {{ venue.venue_state }} {{ venue.venue_postal_code }}</p>
+    <p>{{ venue.venue_address_line1 }}</p>
+    {% if venue.venue_address_line2 %}
+      <p>{{ venue.venue_address_line2 }}</p>
+    {% endif %}
+    {% if venue.venue_address_line3 %}
+      <p>{{ venue.venue_address_line3 }}</p>
+    {% endif %}
+  </section>
+{% endblock %}

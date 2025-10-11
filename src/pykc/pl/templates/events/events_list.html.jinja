@@ -1,0 +1,16 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/events/events_list.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  <div class="flex flex-row flex-shrink">
+    <button id="upcoming-btn" class="common-btn">Upcoming</button>
+    <button id="past-btn" class="common-btn">Past</button>
+  </div>
+  <div id="anchor-point" class="list-container">
+    <section id="upcoming_event-list" class="list-section">
+    </section>
+    <section id="past_event-list" class="list-section hidden">
+    </section>
+  </div>
+{% endblock %}

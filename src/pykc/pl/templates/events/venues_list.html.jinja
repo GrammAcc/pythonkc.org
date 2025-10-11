@@ -1,0 +1,10 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/events/venues_list.mjs') }}"></script>
+{% endblock %}
+{% block content %}
+  <div class="list-container">
+    <section id="venue-list" class="list-section">
+    </section>
+  </div>
+{% endblock %}

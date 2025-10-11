@@ -1,0 +1,34 @@
+{% extends "pykc/root.html.jinja" %}
+
+{% block nav %}
+  <nav class="bookends">
+    <div>
+      <a class="nav-btn" href="{{ make_url('/') }}">Home</a>
+      <a class="nav-btn" href="{{ make_url('/about') }}">About PyKC</a>
+      {% if App.EVENTS is enabled_app %}
+        <a class="nav-btn" href="{{ make_url('/events') }}">Events</a>
+        <a class="nav-btn" href="{{ make_url('/events/venues') }}">Venues</a>
+      {% endif %}
+      {% if Permission.MODIFY_EVENTS is in_member_permissions %}
+        <a class="nav-btn" href="{{ make_url('/events/manage') }}">Event Management</a>
+      {% endif %}
+      {% if App.MEMBERS is enabled_app %}
+        <a class="nav-btn" href="{{ make_url('/members') }}">Members</a>
+      {% endif %}
+    </div>
+    {% if App.MEMBERS is enabled_app %}
+      <div>
+        {% if session.member_id %}
+          <a class="nav-btn" href="{{ make_url('/members/account') }}">Account</a>
+          <a class="nav-btn" href="{{ make_url('/members/logout') }}">Logout</a>
+        {% else %}
+          <a class="nav-btn" href="{{ make_url('/members/join') }}">Join</a>
+          <a class="nav-btn" href="{{ make_url('/members/login') }}">Login</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </nav>
+{% endblock %}
+{% block main %}
+  {% block content %}{% endblock %}
+{% endblock %}

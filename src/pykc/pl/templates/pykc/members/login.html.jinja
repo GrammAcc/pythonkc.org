@@ -1,0 +1,11 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <script type="module" src="{{ make_url('/pykc/static/pages/members/login.mjs') }}"></script>
+  <meta name="discord-oauth-state" content="{{ oauth_nonce }}" />
+{% endblock %}
+{% block content %}
+  {% if from_logout %}
+    <p>Successfully logged out</p>
+  {% endif %}
+  <button id="login-with-discord-btn" class="action-btn">Login with Discord</button>
+{% endblock %}

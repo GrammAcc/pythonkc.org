@@ -1,0 +1,39 @@
+{% extends "pykc/base.html.jinja" %}
+{% block extra_head %}
+  <meta name="resource-id" content="{{ event.res_id }}" />
+{% endblock %}
+{% block content %}
+  <h2>Event Details</h2>
+  <section id="event-details">
+    <p>{{ "CANCELLED" if event.event_is_cancelled else "" }} {{ event.event_title }}</p>
+    <br/>
+    <p>{{ event.event_description }}</p>
+    <br/>
+    <a class="inline-link" href="{{ event.event_external_link }}">Meetup Page</a>
+    <br/>
+    <p><span>From: </span>{{ event.event_start }}</p>
+    <p><span>To: </span>{{ event.event_end }}</p>
+  </section>
+
+  <section>
+  <h2>Location</h2>
+  {% if event.venue_id %}
+    <p>{{ event.venue_name }}</p>
+    <br/>
+    <a class="inline-link" href="{{ event.venue_external_link }}">Official Website</a>
+    <br/>
+    <p>{{ event.venue_city }}, {{ event.venue_state }} {{ event.venue_postal_code }}</p>
+    <p>{{ event.venue_address_line1 }}</p>
+    {% if event.venue_address_line2 %}
+      <p>{{ event.venue_address_line2 }}</p>
+    {% endif %}
+    {% if event.venue_address_line3 %}
+      <p>{{ event.venue_address_line3 }}</p>
+    {% endif %}
+    <p>{{ event.event_location_details }}</p>
+    <p><span>A/V Capable: </span>{{ "Yes" if event.event_is_av_capable else "No" }}</p>
+  {% else %}
+    <p>No Venue Reserved</p>
+  {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,3 @@
+INVALID_SENTINAL = object()
+OPTIONAL_SENTINAL = object()
+REQUIRED_SENTINAL = object()

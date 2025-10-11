@@ -1,0 +1,10 @@
+[Unit]
+Description=pykc
+After=network.target
+
+[Service]
+ExecStart=/bin/sh -c 'cd /home/pykcuser/pykc/ && sh deploy/prod.sh'
+Type=simple
+
+[Install]
+WantedBy=default.target
