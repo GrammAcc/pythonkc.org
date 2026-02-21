@@ -40,15 +40,7 @@ async def test_event_management_socket_requires_csrf(
 
 def create_event_payload():
     base = mock_data.resources()["new"]["Event"]
-    return validation.prepare(
-        dtos.CreateEvent,
-        {
-            **{"event_" + k: v for k, v in base.items()},
-            "event_date": base["start"].date(),
-            "event_start_time": base["start"].time(),
-            "event_end_time": base["end"].time(),
-        },
-    )
+    return validation.prepare(dtos.CreateEvent, {"event_" + k: v for k, v in base.items()})
 
 
 def update_event_payload():

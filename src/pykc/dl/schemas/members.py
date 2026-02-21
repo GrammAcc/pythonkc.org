@@ -58,9 +58,22 @@ Member = sa.Table(
         constraints.text_nonempty("discord_id"),
         constraints.text_no_null_repr("discord_id"),
         unique=True,
-        nullable=False,
+        nullable=True,
+    ),
+    sa.Column(
+        "password_hash",
+        sa.Text,
+        constraints.text_nonempty("password_hash"),
+        constraints.text_no_null_repr("password_hash"),
+        unique=False,
+        nullable=True,
     ),
     sa.Index("moniker_permissions_idx", "moniker", "permissions"),
+    sa.CheckConstraint(
+        "password_hash IS NOT NULL OR discord_id IS NOT NULL", name="login_method_required"
+    ),
+    sa.CheckConstraint("first_name <> '' OR discord_id IS NOT NULL", name="first_name_non_null"),
+    sa.CheckConstraint("last_name <> '' OR discord_id IS NOT NULL", name="last_name_non_null"),
     constraints.timestamps_consistency(),
     sqlite_with_rowid=True,
 )

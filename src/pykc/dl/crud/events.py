@@ -118,7 +118,7 @@ async def get_recurring_by_id(tr: AsyncConnection, recurring_id: PK) -> sa.Row:
 
 async def get_latest_event_date(tr: AsyncConnection, recurring_id: PK) -> datetime.date | None:
     stmt = select(
-        "event_start_date",
+        "start",
         from_.events(),
         where.recurring_id_is(recurring_id),
         where.is_latest_start_date(),

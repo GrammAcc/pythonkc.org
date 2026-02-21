@@ -28,13 +28,15 @@ def _get_session() -> aiohttp.ClientSession:
     return _CLIENT_SESSION
 
 
-CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
-CLIENT_SECRET = os.environ["DISCORD_CLIENT_SECRET"]
+CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", None)
+CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", None)
 REDIRECT_URI = utils.get_site_root() + "/members/login/discord"
 
 
 async def _discord_token_request(data):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    assert CLIENT_ID
+    assert CLIENT_SECRET
     async with _get_session().post(
         "oauth2/token",
         data=data,
@@ -76,7 +78,7 @@ async def create_member_from_discord(discord_user_data: RawData) -> PK:
     ).success:
         raise ValidationError(sanitized.errors)
     else:
-        new_member_pk = await acl.create_member(**sanitized.data)
+        new_member_pk = await acl.create_member_with_discord_id(**sanitized.data)
         new_member = await fetch.member_by_id(new_member_pk)
         prepared = validation.prepare(dtos.CreateMember, new_member)
         msg = {

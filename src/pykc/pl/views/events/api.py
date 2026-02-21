@@ -262,7 +262,9 @@ def register_routes():
         match await errors.return_if_err(fetch.latest_event_by_recurring_id(recurring_id)):
             case Err.OK, dict(anchor_event):
                 new_event_id = await errors.raise_if_err(
-                    scheduling.schedule_next_event(recurring_data, anchor_event["event_date"])
+                    scheduling.schedule_next_event(
+                        recurring_data, anchor_event["event_start"].date()
+                    )
                 )
             case Err.FAILED, _:
                 new_event_id = await errors.raise_if_err(

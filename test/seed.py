@@ -13,7 +13,7 @@ appenv.load()
 
 
 async def members():
-    await db.init(db.members(), os.environ["MEMBERS_DB_URI"], drop_tables=True, echo=True)
+    await db.init(db.members(), os.environ["MEMBERS_DB_URI"], drop_tables=True)
     tr = await grammdb.start_transaction(db.members())
     seed_data = mock_data.resources()["seed"]
     for member_data in seed_data["Member"]:
@@ -24,7 +24,7 @@ async def members():
 
 
 async def events():
-    await db.init(db.events(), os.environ["EVENTS_DB_URI"], drop_tables=True, echo=True)
+    await db.init(db.events(), os.environ["EVENTS_DB_URI"], drop_tables=True)
     tr = await grammdb.start_transaction(db.events())
     seed_data = mock_data.resources()["seed"]
     for recurring_data in seed_data["Recurring"]:

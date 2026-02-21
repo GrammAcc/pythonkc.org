@@ -89,11 +89,11 @@ async def run():
         postal_code="64108",
         external_link="https://www.keystonedistrict.org/",
     )
-    c_and_c_event_id = (await crud.get_next_recurring_event(tr, coffee_and_code_id)).event_id
+    c_and_c_event_id = (await crud.get_next_recurring_event(tr, coffee_and_code_id)).id
     await crud.update_event(
         tr, c_and_c_event_id, venue_id=library_id, location_details="Room #20", is_av_capable=True
     )
-    summer_meetup_id = (await crud.get_next_recurring_event(tr, quarterly_meetup_id)).event_id
+    summer_meetup_id = (await crud.get_next_recurring_event(tr, quarterly_meetup_id)).id
     await crud.update_event(
         tr,
         summer_meetup_id,

@@ -1,15 +1,14 @@
-import { assert, onPageLoad } from "../../utils.mjs";
-import { buildPayload, submitBtn } from "../../editing.mjs";
+import { onPageLoad } from "../../utils.mjs";
 import {
-  loginMember,
+  discordLogin,
   redirectLoginOrShowErrorMsg,
 } from "../../members/login.mjs";
-import { getData, getQueryParam } from "../../page-state.mjs";
+import { getQueryParam } from "../../page-state.mjs";
 
 onPageLoad(async () => {
   const discordAccessCode = getQueryParam("code");
   const discordState = getQueryParam("state");
-  const loginRes = await loginMember({
+  const loginRes = await discordLogin({
     code: discordAccessCode,
     state: discordState,
   });

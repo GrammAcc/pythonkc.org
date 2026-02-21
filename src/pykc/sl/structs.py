@@ -1,4 +1,5 @@
-import datetime
+import functools
+from collections.abc import Callable
 from typing import (
     Any,
     TypeVar,
@@ -6,130 +7,138 @@ from typing import (
 
 import sqlalchemy as sa
 
-# Named type to allow switching to a TypedDict or Dataclass later if desired.
+# Named types to allow switching to a TypedDict or Dataclass later if desired.
 type MemberStruct = dict[str, Any]
-
-
-def member_struct(row: sa.Row) -> MemberStruct:
-    result = row._tuple()
-    return {
-        "member_id": result.member_id,
-        "member_permissions": result.member_permissions,
-        "member_moniker": result.member_moniker,
-        "member_first_name": result.member_first_name,
-        "member_last_name": result.member_last_name,
-        "member_pronouns": result.member_pronouns,
-    }
-
-
-# Named type to allow switching to a TypedDict or Dataclass later if desired.
+type ApiTokenStruct = dict[str, Any]
 type VenueStruct = dict[str, Any]
-
-
-def venue_struct(row: sa.Row) -> VenueStruct:
-    result = row._tuple()
-    return {
-        "venue_id": result.venue_id,
-        "venue_name": result.venue_name,
-        "venue_city": result.venue_city,
-        "venue_state": result.venue_state,
-        "venue_address_line1": result.venue_address_line1,
-        "venue_address_line2": result.venue_address_line2,
-        "venue_address_line3": result.venue_address_line3,
-        "venue_postal_code": result.venue_postal_code,
-        "venue_external_link": result.venue_external_link,
-    }
-
-
-# Named type to allow switching to a TypedDict or Dataclass later if desired.
 type RecurringStruct = dict[str, Any]
-
-
-def recurring_struct(row: sa.Row) -> RecurringStruct:
-    result = row._tuple()
-    return {
-        "recurring_id": result.recurring_id,
-        "recurring_title": result.recurring_title,
-        "recurring_description": result.recurring_description,
-        "recurring_interval_type": result.recurring_interval_type,
-        "recurring_month": result.recurring_month,
-        "recurring_week": result.recurring_week,
-        "recurring_day": result.recurring_day,
-        "recurring_start_time": result.recurring_start_time,
-        "recurring_end_time": result.recurring_end_time,
-    }
-
-
-# Named type to allow switching to a TypedDict or Dataclass later if desired.
 type EventStruct = dict[str, Any]
-
-
-def event_struct(row: sa.Row) -> EventStruct:
-    result = row._tuple()
-    return {
-        "event_id": result.event_id,
-        "event_title": result.event_title,
-        "event_description": result.event_description,
-        "event_external_link": result.event_external_link,
-        "event_date": result.event_start.date(),
-        "event_start_time": result.event_start.time(),
-        "event_end_time": result.event_end.time(),
-        "event_is_cancelled": result.event_is_cancelled,
-        "event_recurring_id": result.event_recurring_id,
-        "event_venue_id": result.event_venue_id,
-        "event_location_details": result.event_location_details,
-        "event_is_av_capable": result.event_is_av_capable,
-        "recurring_id": result.recurring_id,
-        "recurring_interval_type": result.recurring_interval_type,
-        "recurring_month": result.recurring_month,
-        "recurring_week": result.recurring_week,
-        "recurring_day": result.recurring_day,
-        "recurring_start_time": result.recurring_start_time,
-        "recurring_end_time": result.recurring_end_time,
-        "venue_id": result.venue_id,
-        "venue_name": result.venue_name,
-        "venue_city": result.venue_city,
-        "venue_state": result.venue_state,
-        "venue_address_line1": result.venue_address_line1,
-        "venue_address_line2": result.venue_address_line2,
-        "venue_address_line3": result.venue_address_line3,
-        "venue_postal_code": result.venue_postal_code,
-        "venue_external_link": result.venue_external_link,
-    }
 
 
 STRUCT = TypeVar("STRUCT", MemberStruct, EventStruct, VenueStruct, RecurringStruct)
 
+member_mapping = {
+    "id": "member_id",
+    "permissions": "member_permissions",
+    "moniker": "member_moniker",
+    "first_name": "member_first_name",
+    "last_name": "member_last_name",
+    "pronouns": "member_pronouns",
+}
 
-def member_raw(struct_data: STRUCT) -> dict[str, Any]:
-    return {k.removeprefix("member_"): v for k, v in struct_data.items() if k.startswith("member_")}
+api_token_mapping = {
+    "id": "member_id",
+    "hash": "api_token_hash",
+    "jwt": "api_token_jwt",
+    "revoked": "api_token_revoked",
+}
 
 
-def recurring_raw(struct_data: STRUCT) -> dict[str, Any]:
-    return {
-        k.removeprefix("recurring_"): v
-        for k, v in struct_data.items()
-        if k.startswith("recurring_")
-    }
+venue_mapping = {
+    "id": "venue_id",
+    "name": "venue_name",
+    "city": "venue_city",
+    "state": "venue_state",
+    "address_line1": "venue_address_line1",
+    "address_line2": "venue_address_line2",
+    "address_line3": "venue_address_line3",
+    "postal_code": "venue_postal_code",
+    "external_link": "venue_external_link",
+}
+
+recurring_mapping = {
+    "id": "recurring_id",
+    "title": "recurring_title",
+    "description": "recurring_description",
+    "interval_type": "recurring_interval_type",
+    "month": "recurring_month",
+    "week": "recurring_week",
+    "day": "recurring_day",
+    "start_time": "recurring_start_time",
+    "end_time": "recurring_end_time",
+}
+
+event_mapping = {
+    "id": "event_id",
+    "title": "event_title",
+    "description": "event_description",
+    "external_link": "event_external_link",
+    "start": "event_start",
+    "end": "event_end",
+    "is_cancelled": "event_is_cancelled",
+    "recurring_id": "event_recurring_id",
+    "venue_id": "event_venue_id",
+    "location_details": "event_location_details",
+    "is_av_capable": "event_is_av_capable",
+    "recurring_interval_type": "recurring_interval_type",
+    "recurring_month": "recurring_month",
+    "recurring_week": "recurring_week",
+    "recurring_day": "recurring_day",
+    "recurring_start_time": "recurring_start_time",
+    "recurring_end_time": "recurring_end_time",
+    "venue_name": "venue_name",
+    "venue_city": "venue_city",
+    "venue_state": "venue_state",
+    "venue_address_line1": "venue_address_line1",
+    "venue_address_line2": "venue_address_line2",
+    "venue_address_line3": "venue_address_line3",
+    "venue_postal_code": "venue_postal_code",
+    "venue_external_link": "venue_external_link",
+}
 
 
-def venue_raw(struct_data: STRUCT) -> dict[str, Any]:
-    return {k.removeprefix("venue_"): v for k, v in struct_data.items() if k.startswith("venue_")}
+def build_struct(field_mapping: dict[str, str], row: sa.Row) -> Any:
+    result = row._tuple()
+    return {v: getattr(result, k) for k, v in field_mapping.items()}
 
 
-# [[fr]]Rename::dict[str, Any]::RawData[[fr]]
-def event_raw(struct_data: STRUCT) -> dict[str, Any]:
-    overrides = ["event_date", "event_start_time", "event_end_time"]
+member_struct: Callable[[sa.Row], MemberStruct] = functools.partial(build_struct, member_mapping)
+api_token_struct: Callable[[sa.Row], ApiTokenStruct] = functools.partial(
+    build_struct, api_token_mapping
+)
+venue_struct: Callable[[sa.Row], VenueStruct] = functools.partial(build_struct, venue_mapping)
+recurring_struct: Callable[[sa.Row], RecurringStruct] = functools.partial(
+    build_struct, recurring_mapping
+)
+event_struct: Callable[[sa.Row], EventStruct] = functools.partial(build_struct, event_mapping)
 
-    result = {
-        k.removeprefix("event_"): v
-        for k, v in struct_data.items()
-        if k.startswith("event_") and k not in overrides
-    }
-    override_results = {
-        "start": datetime.datetime.combine(
-            struct_data["event_date"], struct_data["event_start_time"]
-        ),
-        "end": datetime.datetime.combine(struct_data["event_date"], struct_data["event_end_time"]),
-    }
-    return {**result, **override_results}
+
+struct_factory = {
+    "member": member_struct,
+    "venue": venue_struct,
+    "recurring": recurring_struct,
+    "event": event_struct,
+    "api_token": api_token_struct,
+}
+
+
+def build_raw[
+    S: (
+        MemberStruct,
+        ApiTokenStruct,
+        VenueStruct,
+        RecurringStruct,
+        EventStruct,
+    )
+](field_mapping: dict[str, str], struct_data: S) -> dict[str, Any]:
+    return {k: struct_data[v] for k, v in field_mapping.items() if v in struct_data}
+
+
+member_raw: Callable[[MemberStruct], dict[str, Any]] = functools.partial(build_raw, member_mapping)
+api_token_raw: Callable[[ApiTokenStruct], dict[str, Any]] = functools.partial(
+    build_raw, api_token_mapping
+)
+venue_raw: Callable[[VenueStruct], dict[str, Any]] = functools.partial(build_raw, venue_mapping)
+recurring_raw: Callable[[RecurringStruct], dict[str, Any]] = functools.partial(
+    build_raw, recurring_mapping
+)
+event_raw: Callable[[EventStruct], dict[str, Any]] = functools.partial(build_raw, event_mapping)
+
+
+raw_factory = {
+    "member": member_raw,
+    "api_token": api_token_raw,
+    "venue": venue_raw,
+    "recurring": recurring_raw,
+    "event": event_raw,
+}

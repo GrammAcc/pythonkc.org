@@ -36,7 +36,7 @@ def _get_month_index(recurring_event: RecurringStruct) -> int:
 async def delete_recurring(recurring_id: PK) -> tuple[PK, PK]:
     async with grammdb.connection_ctx(db.events()) as tr:
         # Cancel any scheduled event for this recurring series before deleting the FK.
-        event_id = (await crud.get_next_recurring_event(tr, recurring_id)).event_id
+        event_id = (await crud.get_next_recurring_event(tr, recurring_id)).id
         await crud.update_event(tr, event_id, is_cancelled=True)
         deleted_id = await crud.delete_recurring(tr, recurring_id)
         await grammdb.commit_transaction(tr)
@@ -56,7 +56,7 @@ async def update_recurring(recurring_id: PK, **new_values) -> RecurringStruct:
             new_event_end = datetime.datetime.combine(
                 new_event_date, new_values["recurring_end_time"]
             )
-            await crud.update_event(tr, event.event_id, start=new_event_start, end=new_event_end)
+            await crud.update_event(tr, event.id, start=new_event_start, end=new_event_end)
             anchor_date = new_event_date
         res = await crud.get_recurring_by_id(tr, recurring_id)
         await grammdb.commit_transaction(tr)

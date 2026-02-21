@@ -90,7 +90,6 @@ export function validationMsgField(dataPoint) {
  * @returns {any | undefined}
  */
 function fieldValue(dataPoint) {
-  // return fieldInput(dataPoint)?.value;
   const el = inputField(dataPoint);
   if (el?.getAttribute("type") === "checkbox") {
     return el.checked;
@@ -307,8 +306,9 @@ export function createSocketFactory(
     setupValidationListeners(socket);
 
     const defaultSuccessHandler = async (res) => undefined;
-    const defaultFailureHandler = async (res) =>
+    const defaultFailureHandler = async (res) => {
       alert(`create ${resName} failed with unknown error. Try again later.`);
+    };
 
     const successHandler = onSuccess ?? defaultSuccessHandler;
     const failureHandler = onFailure ?? defaultFailureHandler;
