@@ -20,18 +20,24 @@ def _required_if_provided(fname: str, next_stage: TransformFunc):
     return required_if((lambda f, msg: msg.get(fname) is not None), next_stage)
 
 
+def _required_if_not_provided(fname: str, next_stage: TransformFunc):
+    return required_if((lambda f, msg: msg.get(fname) is None), next_stage)
+
+
 CreateMember = TransformTable(
     "member",
     sanitize={
         "member_moniker": required(noop),
-        "member_discord_id": required(noop),
-        "member_first_name": optional(noop),
-        "member_last_name": optional(noop),
+        "member_discord_id": _required_if_not_provided("member_pw", noop),
+        "member_pw": _required_if_not_provided("member_discord_id", noop),
+        "member_first_name": _required_if_not_provided("member_discord_id", noop),
+        "member_last_name": _required_if_not_provided("member_discord_id", noop),
         "member_pronouns": optional(noop),
     },
     prepare={
         "member_moniker": noop,
-        "member_discord_id": noop,
+        "member_discord_id": fallback(None, noop),
+        "member_pw": fallback(None, noop),
         "member_first_name": fallback("", noop),
         "member_last_name": fallback("", noop),
         "member_pronouns": fallback("", noop),
@@ -53,6 +59,17 @@ CreateMemberFromDiscord = TransformTable(
     },
 )
 
+MemberLogin = TransformTable(
+    "member",
+    sanitize={
+        "member_moniker": required(noop),
+        "member_pw": required(noop),
+    },
+    prepare={
+        "member_moniker": noop,
+        "member_pw": noop,
+    },
+)
 
 DiscordLogin = TransformTable(
     "member",
@@ -310,9 +327,20 @@ CreateEvent = TransformTable(
         "event_recurring_id": optional(coerce_pk(transform)),
         "event_description": required(noop),
         "event_external_link": optional(coerce_str(assert_https(transform))),
-        "event_date": required(str_to_date(assert_future_date(transform))),
-        "event_start_time": required(str_to_time(_assert_before_end_time(transform))),
-        "event_end_time": required(str_to_time(_assert_after_start_time(transform))),
+        "event_start": combine_datetime(
+            read_field("event_date", required(str_to_date(assert_future_date(transform)))),
+            read_field(
+                "event_start_time", required(str_to_time(_assert_before_end_time(transform)))
+            ),
+            transform,
+        ),
+        "event_end": combine_datetime(
+            read_field("event_date", required(str_to_date(assert_future_date(transform)))),
+            read_field(
+                "event_end_time", required(str_to_time(_assert_after_start_time(transform)))
+            ),
+            transform,
+        ),
         "event_location_details": _required_if_has_venue(coerce_str(transform)),
         "event_is_av_capable": _required_if_has_venue(coerce_bool(transform)),
     },
@@ -321,9 +349,9 @@ CreateEvent = TransformTable(
         "event_venue_id": fallback("0", coerce_str(transform)),
         "event_description": noop,
         "event_external_link": fallback("", noop),
-        "event_date": date_to_str(transform),
-        "event_start_time": time_to_str(transform),
-        "event_end_time": time_to_str(transform),
+        "event_date": read_field("event_start", datetime_to_date(date_to_str(transform))),
+        "event_start_time": read_field("event_start", datetime_to_time(time_to_str(transform))),
+        "event_end_time": read_field("event_end", datetime_to_time(time_to_str(transform))),
         "event_location_details": fallback("", noop),
         "event_is_av_capable": fallback(False, coerce_bool(transform)),
     },
@@ -336,9 +364,20 @@ UpdateEvent = TransformTable(
         "event_title": required(noop),
         "event_description": required(noop),
         "event_external_link": optional(coerce_str(assert_https(transform))),
-        "event_date": required(str_to_date(assert_future_date(transform))),
-        "event_start_time": required(str_to_time(_assert_before_end_time(transform))),
-        "event_end_time": required(str_to_time(_assert_after_start_time(transform))),
+        "event_start": combine_datetime(
+            read_field("event_date", required(str_to_date(assert_future_date(transform)))),
+            read_field(
+                "event_start_time", required(str_to_time(_assert_before_end_time(transform)))
+            ),
+            transform,
+        ),
+        "event_end": combine_datetime(
+            read_field("event_date", required(str_to_date(assert_future_date(transform)))),
+            read_field(
+                "event_end_time", required(str_to_time(_assert_after_start_time(transform)))
+            ),
+            transform,
+        ),
         "event_venue_id": optional(coerce_pk(transform)),
         "event_location_details": _required_if_has_venue(coerce_str(transform)),
         "event_is_av_capable": _required_if_has_venue(coerce_bool(transform)),
@@ -347,9 +386,9 @@ UpdateEvent = TransformTable(
         "event_title": noop,
         "event_description": noop,
         "event_external_link": fallback("", noop),
-        "event_date": date_to_str(transform),
-        "event_start_time": time_to_str(transform),
-        "event_end_time": time_to_str(transform),
+        "event_date": read_field("event_start", datetime_to_date(date_to_str(transform))),
+        "event_start_time": read_field("event_start", datetime_to_time(time_to_str(transform))),
+        "event_end_time": read_field("event_end", datetime_to_time(time_to_str(transform))),
         "event_venue_id": fallback("0", coerce_str(transform)),
         "event_location_details": fallback("", noop),
         "event_is_av_capable": fallback(False, coerce_bool(transform)),
@@ -373,9 +412,20 @@ ListEvent = TransformTable(
         "event_recurring_id": optional(coerce_pk(transform)),
         "event_description": required(noop),
         "event_external_link": optional(noop),
-        "event_date": required(str_to_date(transform)),
-        "event_start_time": required(str_to_time(transform)),
-        "event_end_time": required(str_to_time(transform)),
+        "event_start": combine_datetime(
+            read_field("event_date", required(str_to_date(transform))),
+            read_field(
+                "event_start_time", required(str_to_time(_assert_before_end_time(transform)))
+            ),
+            transform,
+        ),
+        "event_end": combine_datetime(
+            read_field("event_date", required(str_to_date(transform))),
+            read_field(
+                "event_end_time", required(str_to_time(_assert_after_start_time(transform)))
+            ),
+            transform,
+        ),
         "event_is_cancelled": required(coerce_bool(transform)),
         "event_location_details": optional(coerce_str(transform)),
         "event_is_av_capable": _required_if_provided("venue_id", coerce_bool(transform)),
@@ -393,18 +443,14 @@ ListEvent = TransformTable(
         "event_title": noop,
         "event_description": noop,
         "event_external_link": fallback("", noop),
-        "event_date": date_to_str(transform),
-        "event_start_time": time_to_str(transform),
-        "event_end_time": time_to_str(transform),
+        "event_date": read_field("event_start", datetime_to_date(date_to_str(transform))),
+        "event_start_time": read_field("event_start", datetime_to_time(time_to_str(transform))),
+        "event_end_time": read_field("event_end", datetime_to_time(time_to_str(transform))),
         "event_is_cancelled": fallback("", coerce_bool(transform)),
-        "event_start": combine_datetime(
-            "event_date", "event_start_time", format_as_datetime(transform)
-        ),
-        "event_end": combine_datetime(
-            "event_date", "event_end_time", format_as_datetime(transform)
-        ),
         "event_location_details": fallback("", noop),
         "event_is_av_capable": fallback("", coerce_bool(transform)),
+        "event_start": datetime_to_str(transform),
+        "event_end": datetime_to_str(transform),
         "venue_id": fallback("", noop),
         "venue_name": fallback("", noop),
         "venue_city": fallback("", noop),

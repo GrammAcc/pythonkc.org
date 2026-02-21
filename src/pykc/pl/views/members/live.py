@@ -114,3 +114,60 @@ def register_routes():
             raise e
         finally:
             pubsub.unsubscribe(channel, q, channel_filter)
+
+    @routes.public_socket("/members/live/member/create")
+    async def join_new_member_socket():
+        q: asyncio.Queue = asyncio.Queue()
+
+        async def _recv():
+            while True:
+                msg = json.loads(await websocket.receive())
+                sanitized = validation.sanitize(dtos.CreateMember, msg)
+                result_msg = {
+                    "type": pubsub.MsgTypes.VALIDATION_RESULT,
+                    "success": sanitized.success,
+                }
+                await q.put(json.dumps(result_msg))
+                failure_messages = sanitized.errors
+                validation_result = {
+                    "type": pubsub.MsgTypes.VALIDATION_FEEDBACK,
+                    "success_messages": [],
+                    "failure_messages": failure_messages,
+                }
+                await q.put(json.dumps(validation_result))
+
+                new_moniker = msg["member_moniker"]
+
+                match await errors.return_if_err(fetch.member_by_moniker(new_moniker)):
+                    case Err.OK, _:
+                        validation_result = {
+                            "type": pubsub.MsgTypes.VALIDATION_FEEDBACK,
+                            "success_messages": [],
+                            "failure_messages": [
+                                [
+                                    "member_moniker",
+                                    f"{new_moniker} is already taken",
+                                ],
+                                *failure_messages,
+                            ],
+                        }
+                        await q.put(json.dumps(validation_result))
+                    case _, _:
+                        validation_result = {
+                            "type": pubsub.MsgTypes.VALIDATION_FEEDBACK,
+                            "success_messages": [
+                                [
+                                    "member_moniker",
+                                    f"{new_moniker} is available",
+                                ]
+                            ],
+                            "failure_messages": failure_messages,
+                        }
+                        await q.put(json.dumps(validation_result))
+
+        try:
+            await websocket.accept(subprotocol="x-none")
+            await ws_helpers.send_validation_init_msg(dtos.CreateMember)
+            await asyncio.gather(_recv(), ws_helpers.send_from_queue(q))
+        finally:
+            q.shutdown()

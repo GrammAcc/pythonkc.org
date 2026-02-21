@@ -21,6 +21,14 @@ api_token = tokens.generate_token(5)
 token_hash = tokens.hash_token(api_token)
 
 
+def mock_pw():
+    return "TestLogin"
+
+
+def mock_pw_hash():
+    return tokens.pw_hasher().hash(mock_pw())
+
+
 def mock_oauth_token():
     return "test_oauth_token"
 
@@ -29,20 +37,19 @@ def mock_oauth_state():
     return "mock_oauth_state"
 
 
-def seed_resources():
+def base_resources():
     return {
         "Member": [
             {
-                "id": 1,
                 "moniker": "HT",
                 "first_name": "Hugh",
                 "last_name": "Test",
                 "pronouns": "he/him",
                 "permissions": MemberRoles.MEMBER,
                 "discord_id": "1",
+                "password_hash": mock_pw_hash(),
             },
             {
-                "id": 2,
                 "moniker": "JT",
                 "first_name": "Johnny",
                 "last_name": "Test",
@@ -51,7 +58,6 @@ def seed_resources():
                 "discord_id": "2",
             },
             {
-                "id": 3,
                 "moniker": "ST",
                 "first_name": "Susan",
                 "last_name": "Test",
@@ -60,7 +66,6 @@ def seed_resources():
                 "discord_id": "3",
             },
             {
-                "id": 4,
                 "moniker": "MT",
                 "first_name": "Mary",
                 "last_name": "Test",
@@ -69,7 +74,6 @@ def seed_resources():
                 "discord_id": "4",
             },
             {
-                "id": 5,
                 "moniker": "LT",
                 "first_name": "Lila",
                 "last_name": "Test",
@@ -78,7 +82,6 @@ def seed_resources():
                 "discord_id": "5",
             },
             {
-                "id": 6,
                 "moniker": "DT",
                 "first_name": "Dukey",
                 "last_name": "Test",
@@ -89,14 +92,12 @@ def seed_resources():
         ],
         "ApiToken": [
             {
-                "id": 1,
                 "hash": token_hash,
                 "jwt": api_token,
             },
         ],
         "Event": [
             {
-                "id": 1,
                 "title": "mock_event_title",
                 "recurring_id": 1,
                 "external_link": "https://www.example.com",
@@ -111,7 +112,6 @@ def seed_resources():
         ],
         "Recurring": [
             {
-                "id": 1,
                 "title": "mock_recurring_title",
                 "description": "mock_recurring_event_description",
                 "interval_type": EventIntervalType.MONTHLY,
@@ -123,7 +123,6 @@ def seed_resources():
         ],
         "Venue": [
             {
-                "id": 1,
                 "name": "mock_venue_name",
                 "address_line1": "12345 Fake Street",
                 "city": "Overland Park",
@@ -135,13 +134,21 @@ def seed_resources():
     }
 
 
+def seed_resources():
+    return {k: [{**v[i], "id": i + 1} for i in range(len(v))] for k, v in base_resources().items()}
+
+
 def new_resources():
     # Random value to prevent unique constraints from triggering.
     r = str(random.randint(1, 10000))
-    base = seed_resources()
+    base = base_resources()
     return {
         "Member": {
-            **base["Member"][0],
+            **{
+                k: v
+                for k, v in base["Member"][0].items()
+                if k not in ["id", "discord_id", "password_hash"]
+            },
             "moniker": base["Member"][0]["moniker"] + r,
         },
         "ApiToken": {

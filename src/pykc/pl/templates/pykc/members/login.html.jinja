@@ -7,5 +7,10 @@
   {% if from_logout %}
     <p>Successfully logged out</p>
   {% endif %}
+  <div id="member-login">
+    {{ "member_moniker" | make_input("text", "Moniker") }}
+    {{ "member_pw" | make_input("password", "Password") }}
+    {{ "password_login" | make_submit("Login") }}
+  </div>
   <button id="login-with-discord-btn" class="action-btn">Login with Discord</button>
 {% endblock %}

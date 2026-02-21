@@ -18,23 +18,26 @@ from pykc.sl import scheduling
 from pykc.types import RawData
 
 from .constants import INVALID_SENTINAL
-from .contracts import TransformFunc
+from .contracts import (
+    TransformFunc,
+    TransformSegment,
+)
 
 
-def noop(field: Any, msg: dict[str, Any]) -> Any:
+def noop(field: Any, msg: dict[str, Any]) -> tuple[Any, str]:
     return field, ""
 
 
-def transform(field: Any, msg: dict[str, Any]) -> Any:
+def transform(field: Any, msg: dict[str, Any]) -> tuple[Any, str]:
     return field, ""
 
 
 def validation_error(
     err_msg: str, next_stage: TransformFunc
-) -> Callable[[TransformFunc], TransformFunc]:
+) -> Callable[[TransformSegment], TransformFunc]:
     def outer(func):
         @functools.wraps(func)
-        def inner(field: str, msg: RawData) -> Any:
+        def inner(field: str, msg: RawData) -> tuple[Any, str]:
             try:
                 transformed = func(field, msg)
             except Exception as e:
@@ -162,14 +165,14 @@ def coerce_float(next_stage: TransformFunc) -> TransformFunc:
 
 
 def read_field(override_field_name: str, next_stage: TransformFunc) -> TransformFunc:
-    def _(field: Any, msg: dict[str, Any]) -> Any:
+    def _(field: Any, msg: dict[str, Any]) -> tuple[Any, str]:
         return next_stage(msg.get(override_field_name), msg)
 
     return _
 
 
 def read_first_field(field_names: list[str], next_stage: TransformFunc) -> TransformFunc:
-    def _(field: Any, msg: dict[str, Any]) -> Any:
+    def _(field: Any, msg: dict[str, Any]) -> tuple[Any, str]:
         override_field = None
         for field_name in field_names:
             if (found_field := msg.get(field_name, None)) is not None:
@@ -197,21 +200,17 @@ def datetime_to_date(next_stage: TransformFunc) -> TransformFunc:
     return _
 
 
-def combine_datetime(date_field: str, time_field: str, next_stage: TransformFunc) -> TransformFunc:
-    def _(field: Any, msg: dict[str, Any]) -> Any:
+def combine_datetime(
+    date_transform: TransformFunc, time_transform: TransformFunc, next_stage: TransformFunc
+) -> TransformFunc:
+    def _(field: Any, msg: dict[str, Any]) -> tuple[Any, str]:
         try:
-            date_val = msg.get(date_field)
-            time_val = msg.get(time_field)
-
-            if date_val is None:
-                return INVALID_SENTINAL, f"missing date field: {date_field}"
-
-            if time_val is None:
-                return INVALID_SENTINAL, f"missing time field: {time_field}"
+            date_val, _ = date_transform(field, msg)
+            time_val, _ = time_transform(field, msg)
 
             transformed = datetime.datetime.combine(date_val, time_val)
         except Exception as e:
-            grammlog.debug(logs.err_log, "validation failed", err=e)
+            grammlog.error(logs.err_log, "validation failed", err=e)
             return INVALID_SENTINAL, ""
         else:
             return next_stage(transformed, msg)

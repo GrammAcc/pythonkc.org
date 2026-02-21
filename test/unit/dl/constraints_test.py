@@ -56,7 +56,7 @@ def not_null_data():
     return {
         "members": {
             "ApiToken": ["hash", "jwt"],
-            "Member": ["first_name", "last_name", "moniker", "discord_id", "pronouns"],
+            "Member": ["first_name", "last_name", "moniker", "pronouns"],
         },
         "events": {
             "Event": [
@@ -191,6 +191,37 @@ async def test_not_null_constraints(create_payload, db_factory, table):
             async with db_factory().new_connection() as conn:
                 async with conn.begin():
                     stmt = grammdb.insert(into=table, **create_payload)
+                    await conn.execute(stmt)
+
+
+async def test_login_method_requirements():
+    create_payload = {
+        **mock_data.resources()["new"]["Member"],
+        "discord_id": 999,
+        "password_hash": mock_data.mock_pw_hash(),
+    }
+    del create_payload["discord_id"]
+    del create_payload["password_hash"]
+    with pytest.raises(CheckConstraintError, match="login_method_required"):
+        with constraint_error():
+            async with db.members().new_connection() as conn:
+                async with conn.begin():
+                    stmt = grammdb.insert(into=tables.Member, **create_payload)
+                    await conn.execute(stmt)
+
+
+@pytest.mark.parametrize("field_name", ["first_name", "last_name"])
+async def test_name_required_for_password_login(field_name):
+    create_payload = {
+        **mock_data.resources()["new"]["Member"],
+        "password_hash": mock_data.mock_pw_hash(),
+    }
+    del create_payload[field_name]
+    with pytest.raises(CheckConstraintError, match="name_non_null"):
+        with constraint_error():
+            async with db.members().new_connection() as conn:
+                async with conn.begin():
+                    stmt = grammdb.insert(into=tables.Member, **create_payload)
                     await conn.execute(stmt)
 
 

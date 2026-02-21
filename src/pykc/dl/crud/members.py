@@ -56,7 +56,7 @@ async def get_member_by_discord_id(tr: AsyncConnection, discord_id: str) -> sa.R
 
 
 async def get_member_permissions(tr: AsyncConnection, member_id: int) -> MemberRoles:
-    stmt = select("member_permissions", from_.members(), where.member_id_is(member_id))
+    stmt = select("permissions", from_.members(), where.member_id_is(member_id))
     res = await tr.execute(stmt)
     return res.scalar_one()
 

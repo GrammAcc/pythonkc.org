@@ -39,12 +39,8 @@ async def fixt_runner(fixt_app):
 
 
 async def _reset_dbs():
-    await pykc.dl.db.init(
-        pykc.dl.db.events(), os.environ["EVENTS_DB_URI"], drop_tables=True, echo=True
-    )
-    await pykc.dl.db.init(
-        pykc.dl.db.members(), os.environ["MEMBERS_DB_URI"], drop_tables=True, echo=True
-    )
+    await pykc.dl.db.init(pykc.dl.db.events(), os.environ["EVENTS_DB_URI"], drop_tables=True)
+    await pykc.dl.db.init(pykc.dl.db.members(), os.environ["MEMBERS_DB_URI"], drop_tables=True)
     await seed.members()
     await seed.events()
 

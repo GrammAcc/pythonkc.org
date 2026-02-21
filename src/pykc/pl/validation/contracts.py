@@ -8,11 +8,11 @@ from pykc.types import RawData
 
 
 class TransformFunc(Protocol):
-    def __call__(self, field: Any, msg: RawData) -> Any: ...
+    def __call__(self, field: Any, msg: RawData) -> tuple[Any, str]: ...
 
 
 class TransformSegment(Protocol):
-    def __call__(self, next_stage: TransformFunc) -> TransformFunc: ...
+    def __call__(self, field: Any, msg: RawData) -> Any: ...
 
 
 class ConditionFunc(Protocol):

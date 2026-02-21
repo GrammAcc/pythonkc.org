@@ -3,5 +3,10 @@
   <script type="module" src="{{ make_url('/pykc/static/pages/members/join.mjs') }}"></script>
 {% endblock %}
 {% block content %}
+  {{ "member_moniker" | make_input("text", "Moniker") }}
+  {{ "member_first_name" | make_input("text", "First Name") }}
+  {{ "member_last_name" | make_input("text", "Last Name") }}
+  {{ "member_pw" | make_input("password", "Password") }}
+  {{ "member" | make_submit("Join") }}
   <button id="join-discord-btn" class="action-btn">Join the Discord</button>
 {% endblock %}

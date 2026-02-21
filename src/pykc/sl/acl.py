@@ -5,7 +5,10 @@ from pykc.dl import (
     crud,
     db,
 )
-from pykc.sl import structs
+from pykc.sl import (
+    structs,
+    tokens,
+)
 from pykc.sl.structs import MemberStruct
 from pykc.types import PK
 
@@ -47,8 +50,20 @@ async def delete_member(member_id: PK) -> PK:
         return res
 
 
-async def create_member(**values) -> PK:
+async def create_member_with_discord_id(*, member_discord_id: str, **values) -> PK:
     async with grammdb.connection_ctx(db.members()) as tr:
-        res = await crud.create_member(tr, **structs.member_raw(values))
+        res = await crud.create_member(
+            tr, discord_id=member_discord_id, **structs.member_raw(values)
+        )
+        await grammdb.commit_transaction(tr)
+        return res
+
+
+async def create_member_with_password(*, member_pw: str, **values) -> PK:
+    async with grammdb.connection_ctx(db.members()) as tr:
+        password_hash = tokens.pw_hasher().hash(member_pw)
+        res = await crud.create_member(
+            tr, password_hash=password_hash, **structs.member_raw(values)
+        )
         await grammdb.commit_transaction(tr)
         return res

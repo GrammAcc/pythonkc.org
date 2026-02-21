@@ -11,14 +11,15 @@ maintainers = [{ name = "GrammAcc" }]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp",
     "aiosqlite",
+    "argon2-cffi",
+    "grammdb",
+    "grammlog>=1.4.1",
     "hypercorn",
     "pyjwt",
     "quart",
     "sqlalchemy[asyncio]",
-    "grammlog>=1.3.0",
-    "grammdb",
-    "aiohttp",
 ]
 
 
@@ -66,10 +67,15 @@ dependencies = [
 
 typecheck = "mypy -p pykc {args}"
 format = ["isort --atomic .", "black ."]
-lint = "flake8 src test docs"
+lint = "flake8 src test documentation"
 "docs.build" = "APPENV=dev pdoc 'pykc' --docformat='google' --output-directory='docs/site'"
 "docs.serve" = "python documentation/serve.py"
 "docs.test" = "APPENV=test python documentation/run_doctests.py"
+"init.dev" = [
+    "hatch run dev:setup.http",
+    "hatch run dev:seed",
+    "hatch run dev:serve",
+]
 "build.frontend" = [
     "hatch run frontend:build.pykc",
     "hatch run frontend:build.events",
@@ -152,6 +158,7 @@ description = "Local Dev"
 
 [tool.hatch.envs.dev.scripts]
 setup = "python -m scripts.gendevenv"
+"setup.http" = "python -m scripts.gendevenvhttp"
 "setup.proxy" = "python -m scripts.gendevenvwithproxy"
 serve = "APPENV=dev hypercorn --config env/dev.server.toml 'pykc:create_app()'"
 stop = "pkill hypercorn"
@@ -189,7 +196,7 @@ detached = true
 
 [tool.pytest.ini_options]
 log_file = "env/logs/testsuite.log"
-log_file_level = "DEBUG"
+log_file_level = "ERROR"
 addopts = "--import-mode=importlib --show-capture=no"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

@@ -3,23 +3,23 @@ import sqlalchemy as sa
 from pykc.dl import tables
 
 _all_members_columns = [
-    *tables.COLUMN_ALIASES["members"],
+    *tables.COLUMN_NAMES["members"],
     *tables.COLUMN_ALIASES["api_tokens"],
 ]
 
 _all_events_columns = [
-    *tables.COLUMN_ALIASES["events"],
-    *tables.COLUMN_ALIASES["recurring"],
-    *tables.COLUMN_ALIASES["venues"],
+    *tables.COLUMN_NAMES["events"],
+    *[i for i in tables.COLUMN_ALIASES["recurring"] if i.name != "recurring_id"],
+    *[i for i in tables.COLUMN_ALIASES["venues"] if i.name != "venue_id"],
 ]
 
 
 def members() -> sa.Select:
-    return sa.select(*tables.COLUMN_ALIASES["members"])
+    return sa.select(*tables.COLUMN_NAMES["members"])
 
 
 def tokens() -> sa.Select:
-    return sa.select(*tables.COLUMN_ALIASES["api_tokens"])
+    return sa.select(*tables.COLUMN_NAMES["api_tokens"])
 
 
 def events() -> sa.Select:
@@ -34,8 +34,8 @@ def events() -> sa.Select:
 
 
 def recurring() -> sa.Select:
-    return sa.select(*tables.COLUMN_ALIASES["recurring"])
+    return sa.select(*tables.COLUMN_NAMES["recurring"])
 
 
 def venues() -> sa.Select:
-    return sa.select(*tables.COLUMN_ALIASES["venues"])
+    return sa.select(*tables.COLUMN_NAMES["venues"])

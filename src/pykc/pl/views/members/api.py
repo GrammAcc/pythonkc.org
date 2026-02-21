@@ -28,6 +28,50 @@ from . import oauth
 
 
 def register_routes():
+    @routes.public_api("/members/authenticate/password", methods=["PUT"])
+    async def password_authentication() -> Response:
+        """Login the user with password auth."""
+
+        body = await request.get_json()
+        if not (sanitized := validation.sanitize(dtos.MemberLogin, body)).success:
+            return res_helpers.bad_request("validation failed", sanitized)
+        else:
+            moniker, pw = sanitized.data["member_moniker"], sanitized.data["member_pw"]
+
+            match await tokens.verify_member_password(moniker, pw):
+                case Err.OK, member_id:
+                    quart_session["member_id"] = member_id
+                    quart_session.permanent = True
+                    return res_helpers.success()
+                case Err.INVALID, str(result):
+                    return res_helpers.bad_request(result)
+                case Err.AUTH, str():
+                    return res_helpers.unauthorized()
+                case _:
+                    return res_helpers.internal_server_error()
+
+    @routes.public_api("/members/member/create", methods=["POST"])
+    async def create_member() -> Response:
+        payload = await request.json
+        if not (sanitized := validation.sanitize(dtos.CreateMember, payload)).success:
+            return res_helpers.bad_request("create member failed", sanitized)
+        else:
+            match await errors.return_if_err(acl.create_member_with_password(**sanitized.data)):
+                case Err.OK, new_member_pk:
+                    new_member = await errors.raise_if_err(fetch.member_by_id(new_member_pk))
+                    prepared = validation.prepare(dtos.CreateMember, new_member)
+                    msg = {
+                        "type": pubsub.MsgTypes.LIST_ADD,
+                        "res_id": new_member_pk,
+                        "resource": prepared,
+                    }
+                    await pubsub.publish(pubsub.Channel.LIST_MEMBERS, msg)
+                    return res_helpers.created(str(new_member_pk))
+                case Err.INTEGRITY:
+                    return res_helpers.bad_request("bad data")
+                case _:
+                    return res_helpers.internal_server_error()
+
     @routes.public_api("/members/authenticate/discord", methods=["PUT"])
     async def discord_authentication() -> Response:
         """Login the user with discord."""
