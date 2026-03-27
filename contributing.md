@@ -72,18 +72,21 @@ To get started run the following commands to clone and setup the local automatio
 git clone https://github.com/GrammAcc/pythonkc.org pykc
 cd pykc
 npm install
-hatch run dev:setup
 ```
 
-The application will not run with only this setup. You will also need to setup local HTTPS and the discord client id and secret for discord oauth.
+### Path for quick evaluation or full development mode
 
-### Obtaining discord oauth credentials
+#### Application quickstart
 
-You can access the discord application id and secret for oauth through the discord developer portal. An admin will need to add you to the dev team for the pykc oauth application. You can request access in the pythonkc discord server.
+Depending on your development plans, at this point one can bring up the application in a non-https state, allowing for a quick review. Run `hatch run init.dev`, which sets up the dev env, seeds the test users and sample events, and starts the application. The site should be available at `http://localhost:8000`. User accounts can be found below at [Seeding test users and events](./contributing.md#seeding-test-users-and-events).
 
-Once you have the discord client id and secret, store them in a `.env` file in the project root under the env vars `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` respectively.
+**Note:** Do not use this for development because dev needs https client connectivity for full functionality. In addition, do not use this to regularly start the local dev env because it resets the entire environment, including signing secrets used for server-side sessions and JWT. 
 
-TODO: Add some kind of secrets management to automate this process.
+#### Continuing setup for full development
+
+If you are planning on developing functionality, continue the setup process by running `hatch run dev:setup`.
+
+**Note:** If you executed the quickstart section, `dev:setup` is not required, just continue with **Local HTTPS** configuration. The `init.dev` script includes `dev:setup`.
 
 ### Local HTTPS
 
@@ -114,15 +117,16 @@ directory into the `env/certs` directory alongside the other cert files.
 
 Now, when running `hatch run dev:serve`, the site should be available over tls at `https://localhost:8000`.
 
-### Seeding your test user
+### Seeding test users and events
 
-Seed the database with `hatch run dev:seed`.
-Run the application with `hatch run dev:serve`, then navigate to `https://localhost:8000/members/login` and login with discord.
-This will create a new user account associated with your discord login.
-Back in the shell run `hatch run dev:mkorganizer MyUserName` where `MyUserName` is the "moniker" that was created for your profile/account page.
-Now you should have full organizer permissions on the local website, and will be able to test all flows such as event management and member role assignment.
+**Note:** If you executed the quickstart section above, `dev:seed` is not required, just start the application using `hatch run dev:serve`. The `init.dev` script includes `dev:seed`.
 
-TODO: Automate member account creation and permissions updates without needing to use discord login.
+Seed the database with `hatch run dev:seed`, adding test users and sample events.
+Run the application with `hatch run dev:serve`, then navigate to `https://localhost:8000/members/login` and login using any of the following user accounts which correspond to the associated roles:
+- Developer
+- Event Manager
+- Moderator
+- Organizer
 
 ### Hatch Scripts
 
@@ -136,6 +140,7 @@ The following hatch scripts are available for various development tasks:
     - `hatch run dev:mkorganizer {username}` - set `username` from the members database to have organizer permissions for local testing.
     - `hatch run dev:serve` - Run the application with hypercorn in the dev environment.
     - `hatch run dev:stop` - Kill the dev server if running in the background. E.g. with `hatch run dev:serve &`.
+    - `hatch run init.dev` - Runs `dev:setup`, `dev:seed`, and `dev:serve`, functioning as a quickstart process that sets up a local environment using http.
     - `hatch run test:setup` - same as dev:setup but for the test env instead of the dev env.
     - `hatch run test:seed` - same as dev:seed but for the test env instead of the dev env.
     - `hatch run test:seed.events` - same as dev:seed.events but for the test env instead of the dev env.
