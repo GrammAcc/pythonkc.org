@@ -91,7 +91,7 @@ The project uses HTTPS in production and for local development.
 Local HTTPS can be set up with the [mkcert](https://github.com/FiloSottile/mkcert) tool.
 
 Create a `env/certs` directory in the project root and follow the installation instructions
-for your platform in the mkcert READme, and then you can enable local HTTPS with the
+for your platform in the mkcert README, and then you can enable local HTTPS with the
 following commands:
 
 ```bash
@@ -109,6 +109,8 @@ To find the fullchain cert run `mkcert -CAROOT`. Copy the `rootCA.pem` file from
 directory into the `env/certs` directory alongside the other cert files.
 
 **Important!!** Do **NOT** copy the `rootCA-key.pem` file. That is the private key, and it must **NOT** be shared.
+
+**Note:** On macOS, the mkcert fullchain cert file name does not match the `scripts/gendevenv.py` file's default file name in the `ssl_fullchain_path` environment variable. Change one of the names so they match, taking care to not check in the `scripts/gendevenv.py` file if it is modified.
 
 Now, when running `hatch run dev:serve`, the site should be available over tls at `https://localhost:8000`.
 
