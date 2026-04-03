@@ -4,7 +4,6 @@ The pythonkc.org website is a volunteer project maintained by the pythonkc commu
 
 Please follow the guidelines in this document to ensure the limited volunteer resources are utilized efficiently.
 
-
 ## Reporting Bugs
 
 If you notice a bug when using the website, please open an issue on github with steps to reproduce.
@@ -106,6 +105,8 @@ directory into the `env/certs` directory alongside the other cert files, renamin
 `cp path/to/rootCA.pem env/certs/root-ca.pem`
 
 **Important!!** Do **NOT** copy the `rootCA-key.pem` file. That is the private key, and it must **NOT** be shared.
+
+Run `hatch run dev:setup` to create the tls-related env vars and update the dev env files.
 
 Now, when running `hatch run dev:serve`, the site should be available over tls at `https://localhost:8000`.
 
