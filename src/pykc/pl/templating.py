@@ -81,12 +81,10 @@ def make_textarea(field_name: str, label: str, data: RawData = {}) -> str:
 
 
 def make_select(
-    field_name: str, enum_members: tuple[str, Any], label: str, data: RawData = {}
+    field_name: str, enum_members: list[tuple[str, Any]], label: str, data: RawData = {}
 ) -> str:
     current_val = data.get(field_name)
-    # Mypy complains about string unpacking here even though this is a list comprehension and is
-    # only doing tuple unpacking on the `enum_members`, so we ignore the error in-line.
-    options = [  # type: ignore [misc]
+    options = [
         f"""<option {"selected" if current_val == val else ""} value="{val}">{field}</option>"""
         for field, val in enum_members
     ]
